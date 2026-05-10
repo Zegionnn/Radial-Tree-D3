@@ -3,212 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualisasi Radial Tree - Data Superstore</title>
+    <title>Interaktif Radial Tree - Superstore</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --accent-color: #3498db;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --warning: #e67e22;
+            --danger: #e74c3c;
+            --bg: #f8f9fa;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 0;
-            background-color: var(--bg-color);
-            color: var(--primary-color);
+            background-color: var(--bg);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* Bagian Header & Identitas */
         .header {
             width: 100%;
-            background-color: var(--primary-color);
+            background: var(--primary);
             color: white;
             padding: 20px 0;
             text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .container {
-            max-width: 1000px;
-            width: 90%;
-            margin: 20px auto;
-        }
-
-        .identity-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             margin-bottom: 20px;
-            border-left: 5px solid var(--accent-color);
         }
 
-        .identity-card h2 {
-            margin-top: 0;
-            color: var(--accent-color);
-            font-size: 1.2rem;
+        .main-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            width: 95%;
+            max-width: 1200px;
         }
 
-        .identity-grid {
-            display: grid;
-            grid-template-columns: 120px 10px auto;
-            gap: 5px;
-            font-size: 0.95rem;
-        }
-
-        /* Bagian Keterangan Visualisasi */
-        .description-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            line-height: 1.6;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        /* Bagian Chart */
+        /* Chart Area */
         #chart-container {
-            background: var(--card-bg);
-            border-radius: 8px;
+            background: white;
             padding: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            flex: 1;
+            min-width: 600px;
             display: flex;
             justify-content: center;
-            overflow: hidden;
         }
 
-        svg {
-            max-width: 100%;
-            height: auto;
+        /* Info Panel */
+        #info-panel {
+            width: 300px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            border-top: 8px solid var(--accent);
         }
 
-        footer {
-            margin-top: 40px;
-            padding: 20px;
-            font-size: 0.8rem;
-            color: #7f8c8d;
+        .node:hover { cursor: pointer; }
+        .node circle { transition: all 0.3s; }
+        .node:hover circle { r: 8; fill: var(--warning) !important; }
+
+        .detail-item {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
         }
+        .detail-label { font-size: 0.8rem; color: #7f8c8d; text-transform: uppercase; }
+        .detail-value { font-size: 1.1rem; font-weight: bold; color: var(--primary); }
+
+        .hint {
+            font-style: italic;
+            color: #95a5a6;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        footer { margin: 40px 0; color: #bdc3c7; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>Visualisasi Data Superstore</h1>
-        <p>Analisis Hierarki Penjualan Menggunakan Radial Tree</p>
+        <p>Dibuat Oleh: Muhammad Irsyadul Ibad - 23082010169</p>
     </div>
 
-    <div class="container">
-        <div class="identity-card">
-            <h2>Dibuat Oleh:</h2>
-            <div class="identity-grid">
-                <div>Nama</div><div>:</div><div>Muhammad Irsyadul Ibad</div>
-                <div>NIM</div><div>:</div><div>23082010169</div>
-                <div>Mata Kuliah</div><div>:</div><div>Data Visual Paralel B</div>
-            </div>
-        </div>
-
-        <div class="description-card">
-            <strong>Tentang Visualisasi:</strong><br>
-            Diagram <em>Radial Tree</em> di bawah ini merepresentasikan struktur organisasi data dari Dataset Superstore. 
-            Struktur hierarki disusun berdasarkan urutan: 
-            <strong>Pusat (Root) &rarr; Tahun &rarr; Quartal &rarr; Kategori Produk</strong>. 
-            Titik berwarna biru pada ujung cabang menunjukkan kategori produk akhir, sementara garis penghubung menunjukkan hubungan distribusi waktu penjualan.
-        </div>
-
+    <div class="main-layout">
         <div id="chart-container">
             <div id="chart"></div>
         </div>
+
+        <div id="info-panel">
+            <h2 id="node-name" style="margin-top:0; color: var(--accent);">Detail Data</h2>
+            <p id="node-type" style="color: #7f8c8d; margin-bottom: 20px;">Pilih salah satu titik di peta</p>
+            
+            <div id="data-display" style="display: none;">
+                <div class="detail-item">
+                    <div class="detail-label">Total Sales</div>
+                    <div class="detail-value" id="val-sales">$0</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Total Profit</div>
+                    <div class="detail-value" id="val-profit">$0</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Quantity Sold</div>
+                    <div class="detail-value" id="val-qty">0</div>
+                </div>
+            </div>
+            <p id="placeholder-text" class="hint">Silakan klik pada node (titik) untuk menampilkan ringkasan data penjualan.</p>
+        </div>
     </div>
 
-    <footer>
-        &copy; 2026 - Dibuat dengan D3.js untuk Tugas Visualisasi Data
-    </footer>
+    <footer>&copy; 2026 - Proyek Visualisasi Data</footer>
 
     <script>
         fetch('convertcsv.json')
-            .then(response => response.json())
+            .then(res => res.json())
             .then(rawData => {
-                
-                const data = rawData.slice(1); // Lewati header
+                const data = rawData.slice(1);
 
-                // Transformasi data ke Hierarki
-                const groupedData = d3.group(data, d => d.A, d => d.B, d => d.C);
+                // Fungsi Transformasi & Agregasi Data
+                function buildHierarchy(data) {
+                    const root = { name: "Superstore", children: [], sales: 0, profit: 0, qty: 0 };
+                    
+                    data.forEach(d => {
+                        let year = root.children.find(c => c.name === d.A);
+                        if (!year) {
+                            year = { name: d.A, children: [], sales: 0, profit: 0, qty: 0 };
+                            root.children.push(year);
+                        }
+                        
+                        let qtr = year.children.find(c => c.name === d.B);
+                        if (!qtr) {
+                            qtr = { name: d.B, children: [], sales: 0, profit: 0, qty: 0 };
+                            year.children.push(qtr);
+                        }
 
-                function buildHierarchy(map, name) {
-                    if (map instanceof Map) {
-                        return {
-                            name: name,
-                            children: Array.from(map.entries()).map(([k, v]) => buildHierarchy(v, k))
+                        let cat = { 
+                            name: d.C, 
+                            sales: parseFloat(d.D), 
+                            profit: parseFloat(d.E), 
+                            qty: parseInt(d.F) 
                         };
-                    } else {
-                        return { name: name };
-                    }
+                        qtr.children.push(cat);
+
+                        // Agregasi nilai ke orang tua
+                        [root, year, qtr].forEach(node => {
+                            node.sales += cat.sales;
+                            node.profit += cat.profit;
+                            node.qty += cat.qty;
+                        });
+                    });
+                    return root;
                 }
 
-                const hierarchicalData = buildHierarchy(groupedData, "Superstore");
+                const hierarchicalData = buildHierarchy(data);
 
-                // Dimensi
-                const width = 800;
-                const height = 800;
-                const radius = width / 2 - 120;
+                // D3 Setup
+                const width = 700;
+                const radius = width / 2 - 100;
 
                 const tree = d3.tree()
                     .size([2 * Math.PI, radius])
                     .separation((a, b) => (a.parent == b.parent ? 1 : 2) / a.depth);
 
-                const root = tree(d3.hierarchy(hierarchicalData)
-                    .sort((a, b) => d3.ascending(a.data.name, b.data.name)));
+                const root = tree(d3.hierarchy(hierarchicalData));
 
                 const svg = d3.select("#chart").append("svg")
                     .attr("width", width)
-                    .attr("height", height)
-                    .attr("viewBox", [-width/2, -height/2, width, height])
-                    .attr("style", "font: 11px sans-serif;");
+                    .attr("height", width)
+                    .attr("viewBox", [-width/2, -width/2, width, width])
+                    .append("g");
 
-                // Link (Garis)
+                // Links
                 svg.append("g")
                     .attr("fill", "none")
-                    .attr("stroke", "#ccc")
-                    .attr("stroke-opacity", 0.6)
-                    .attr("stroke-width", 1.2)
-                  .selectAll()
-                  .data(root.links())
-                  .join("path")
-                    .attr("d", d3.linkRadial()
-                        .angle(d => d.x)
-                        .radius(d => d.y));
+                    .attr("stroke", "#dfe6e9")
+                    .attr("stroke-width", 1.5)
+                  .selectAll().data(root.links()).join("path")
+                    .attr("d", d3.linkRadial().angle(d => d.x).radius(d => d.y));
 
-                // Node (Titik & Label)
+                // Nodes
                 const node = svg.append("g")
-                  .selectAll()
-                  .data(root.descendants())
-                  .join("g")
-                    .attr("transform", d => `rotate(${d.x * 180 / Math.PI - 90}) translate(${d.y},0)`);
+                  .selectAll().data(root.descendants()).join("g")
+                    .attr("class", "node")
+                    .attr("transform", d => `rotate(${d.x * 180 / Math.PI - 90}) translate(${d.y},0)`)
+                    .on("click", (event, d) => showDetail(d.data)); // INTERAKSI KLIK
 
                 node.append("circle")
-                    .attr("fill", d => d.children ? "#2c3e50" : "#3498db")
-                    .attr("r", 4);
+                    .attr("fill", d => d.children ? varName(d.depth) : "#3498db")
+                    .attr("r", d => d.children ? 5 : 4);
 
                 node.append("text")
                     .attr("dy", "0.31em")
-                    .attr("x", d => d.x < Math.PI === !d.children ? 8 : -8)
+                    .attr("x", d => d.x < Math.PI === !d.children ? 10 : -10)
                     .attr("text-anchor", d => d.x < Math.PI === !d.children ? "start" : "end")
                     .attr("transform", d => d.x >= Math.PI ? "rotate(180)" : null)
                     .text(d => d.data.name)
-                  .clone(true).lower()
-                    .attr("stroke", "white")
-                    .attr("stroke-width", 3);
-            })
-            .catch(error => {
-                console.error("Error loading JSON:", error);
-                document.getElementById('chart').innerHTML = "<p style='color:red;'>Gagal memuat data. Pastikan file convertcsv.json ada di folder yang sama.</p>";
+                    .style("font-size", "10px")
+                    .clone(true).lower()
+                    .attr("stroke", "white").attr("stroke-width", 3);
+
+                // Fungsi Warna berdasarkan level
+                function varName(depth) {
+                    const colors = ["#2c3e50", "#e67e22", "#27ae60"];
+                    return colors[depth] || "#95a5a6";
+                }
+
+                // FUNGSI MENAMPILKAN DETAIL
+                function showDetail(data) {
+                    document.getElementById('data-display').style.display = 'block';
+                    document.getElementById('placeholder-text').style.display = 'none';
+                    
+                    document.getElementById('node-name').innerText = data.name;
+                    document.getElementById('node-type').innerText = "Data Transaksi";
+                    
+                    // Format Mata Uang
+                    const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+                    
+                    document.getElementById('val-sales').innerText = formatter.format(data.sales);
+                    document.getElementById('val-profit').innerText = formatter.format(data.profit);
+                    document.getElementById('val-qty').innerText = data.qty.toLocaleString() + " Items";
+
+                    // Beri warna khusus pada profit jika minus
+                    document.getElementById('val-profit').style.color = data.profit < 0 ? "var(--danger)" : "var(--success)";
+                }
             });
     </script>
 </body>
